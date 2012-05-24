@@ -31,8 +31,6 @@ AnyOption *opt = 0;
 
 static CvMemStorage* storage = 0;
 static CvHaarClassifierCascade* cascade = 0;
-//static CvHaarClassifierCascade* smileCascade = 0;
-vector<CvHaarClassifierCascade*> smileCascades;
 
 void processImage(char * imageFile);
 int loadOptions(int argc, char *argv[]);
@@ -41,15 +39,18 @@ void printUsage();
 
 int main(int argc, char** argv) {
 
+	// load the command line options
 	if (!loadOptions(argc, argv)) {
 		return 0;
 	}
 
+	// initialize the face detect cascade
 	CvCapture* capture = 0;
 	if (opt_cascade_face) {
 		cascade = (CvHaarClassifierCascade*) cvLoad(opt_cascade_face, 0, 0, 0);
 	}
 
+	// make sure a face detect cascade was successfully loaded
 	if (cascade) {
 		if (opt_debug) {
 			printf("Face detection cascade loaded\n");
@@ -83,6 +84,7 @@ int main(int argc, char** argv) {
 	    if ((dp  = opendir(opt_input_path)) == NULL) {
 	    	fprintf(stderr, "Unable to open directory: %s\n", opt_input_path);
 	    } else {
+	    	// loop over all files in the input directory and look for images
 			while ((dirp = readdir(dp)) != NULL) {
 				char *fileName = dirp->d_name;
 
@@ -133,10 +135,6 @@ void processImage(char * imageFile) {
 		imageFileName = imageFile;
 	}
 
-	bool faceFound = false;
-	bool smileFound = false;
-	bool frownFound = false;
-
 	if (opt_debug) {
 		printf("Image has dimensions: w%d h%d\n", img->width, img->height);
 	}
@@ -152,6 +150,7 @@ void processImage(char * imageFile) {
 		printf("Using a scale of: %g\n", scale);
 	}
 
+	// how much should we scale the markup image
 	double scaleMarkup = scale;
 
 	//cvCopy(img, imgMarkup);
@@ -161,6 +160,7 @@ void processImage(char * imageFile) {
 			img->nChannels);
 	IplImage* small_img_gray = cvCreateImage(cvSize(small_img->width, small_img->height), 8, 1);
 
+	// imgMarkup is the image that we will draw boxes and crosshairs on for visualization
 	IplImage* imgMarkup = cvCreateImage(cvSize(cvRound(img->width * scaleMarkup), cvRound(img->height * scaleMarkup)),
 			img->depth, img->nChannels);
 	cvResize(img, imgMarkup, CV_INTER_LINEAR);
@@ -172,18 +172,17 @@ void processImage(char * imageFile) {
 	//cvEqualizeHist( small_img, small_img );
 	cvClearMemStorage(storage);
 
-	double t = (double) cvGetTickCount();
-	double tt = (double) cvGetTickCount();
+	// set up timers
+	double ticks = (double) cvGetTickCount();
 
-	// Look for a face in the photo
-
+	// Look for faces in the photo
 	CvSeq* faces = cvHaarDetectObjects(small_img, cascade, storage, 1.1, 5, 0/*CV_HAAR_DO_CANNY_PRUNING*/,
 			cvSize(30, 30));
-	t = (double) cvGetTickCount() - t;
+	ticks = (double) cvGetTickCount() - ticks;
+
 	//doHist(img);
 	//printf( "detection time = %gms\n", t/((double)cvGetTickFrequency()*1000.) );
 	for (i = 0; i < (faces ? faces->total : 0); i++) {
-		faceFound = true;
 
 		CvRect* faceRect = (CvRect*) cvGetSeqElem(faces, i);
 		CvPoint center;
@@ -206,12 +205,16 @@ void processImage(char * imageFile) {
 
 		CvPoint leftEye = cvPoint(0, 0);
 		CvPoint rightEye = cvPoint(0, 0);
+
+		// look for eyes in the photo
 		//cvClearMemStorage( storage );
 		eyeDetector->find(faceBlock, &leftEye, &rightEye);
 		leftEye.x = (faceRect->x + leftEye.x);
 		leftEye.y = (faceRect->y + leftEye.y);
 		rightEye.x = (faceRect->x + rightEye.x);
 		rightEye.y = (faceRect->y + rightEye.y);
+
+		// draw crosshairs where we think the eyes are
 		CvUtils::drawCrosshair(&leftEye, imgMarkup, 255, 0, 0);
 		CvUtils::drawCrosshair(&rightEye, imgMarkup, 0, 0, 255);
 
