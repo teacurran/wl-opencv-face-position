@@ -12,6 +12,10 @@
 using namespace std;
 using namespace std;
 
+// this is where in the final face image we would like to have the right and left eyes be. x, y
+const double canonicalLeftEye[]  = { 17, 21 };
+const double canonicalRightEye[] = { 65, 21 };
+
 char* opt_file = 0;
 char* opt_cascade_face = 0;
 char* opt_cascade_eye_right = 0;
@@ -33,6 +37,7 @@ static CvMemStorage* storage = 0;
 static CvHaarClassifierCascade* cascade = 0;
 
 void processImage(char * imageFile);
+void processFace(IplImage* detectedFaceImg);
 int loadOptions(int argc, char *argv[]);
 void printVersion();
 void printUsage();
@@ -180,19 +185,26 @@ void processImage(char * imageFile) {
 			cvSize(30, 30));
 	ticks = (double) cvGetTickCount() - ticks;
 
-	//doHist(img);
-	//printf( "detection time = %gms\n", t/((double)cvGetTickFrequency()*1000.) );
+	// loop over all of the faces found in the image.
 	for (i = 0; i < (faces ? faces->total : 0); i++) {
 
 		CvRect* faceRect = (CvRect*) cvGetSeqElem(faces, i);
 		CvPoint center;
+
 		//int radius;
 		center.x = cvRound((faceRect->x + faceRect->width * 0.5));
 		center.y = cvRound((faceRect->y + faceRect->height * 0.5));
 		//radius = cvRound((faceRect->width + faceRect->height)*0.25);
 
-		// extend the height a little because the haar-detection seems to be cropping right below the lip
-		//faceRect->height = faceRect->height*1.05;
+		// we want to expand the detected face a little bit so we have padding on the rotation
+		double expandPercentage = 10;
+		double expandX = (faceRect->width * (100 + expandPercentage) / 100) - faceRect->width;
+		double expandY = (faceRect->height * (100 + expandPercentage) / 100) - faceRect->height;
+
+		faceRect->x = faceRect->x - expandX/2;
+		faceRect->y = faceRect->y - expandY/2;
+		faceRect->width = faceRect->width + expandX;
+		faceRect->height = faceRect->height + expandY;
 
 		IplImage *faceBlock = CvUtils::Sub_Image(
 				small_img,
@@ -362,8 +374,13 @@ void processImage(char * imageFile) {
 	cout << "\n";
 
 	cvReleaseImage(&img);
+}
+
+void processFace(IplImage* detectedFaceImg) {
+
 
 }
+
 
 void printVersion() {
 	// Display if the IPP library got loaded into opencv.
