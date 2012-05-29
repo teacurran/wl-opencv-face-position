@@ -16,6 +16,9 @@ using namespace std;
 const double canonicalLeftEye[]  = { 17, 21 };
 const double canonicalRightEye[] = { 65, 21 };
 
+const int targetImageWidth = 100;
+const int targetImageHeight = 100;
+
 char* opt_file = 0;
 char* opt_cascade_face = 0;
 char* opt_cascade_eye_right = 0;
@@ -29,6 +32,7 @@ bool opt_show_ui = false;
 bool opt_draw_features = false;
 bool opt_debug = false;
 bool opt_rotate = false;
+bool opt_zoom = false;
 
 CvScalar *colors = CvUtils::getColors();
 AnyOption *opt = 0;
@@ -215,6 +219,9 @@ void processImage(char * imageFile) {
 				)
 			);
 
+		// draw a box around the face
+		CvUtils::drawRect(*faceRect, imgMarkup, colors[i % 8]);
+
 		CvPoint leftEye = cvPoint(0, 0);
 		CvPoint rightEye = cvPoint(0, 0);
 
@@ -301,8 +308,67 @@ void processImage(char * imageFile) {
 			}
 		}
 
-		// draw a box around the face
-		CvUtils::drawRect(*faceRect, imgMarkup, colors[i % 8]);
+		// TODO: this block was pasted in from another project, it isn't currently working.
+
+		if (opt_zoom) {
+			double zoomScale = 1;
+			// scale the train rectangle to the size it will need to be to align the eyes.
+			if (leftEye.x > 0 && rightEye.x > 0) {
+				// see if we need to resize the height/width of the face block
+				int targetLeftEyeX = int(canonicalLeftEye[0] * targetScale);
+				int targetRightEyeX = int(canonicalRightEye[0] * targetScale);
+				int targetXWidth = targetRightEyeX - targetLeftEyeX;
+				int actualXWidth = rightEye.x - leftEye.x;
+
+				if (actualXWidth > 0) {
+					zoomScale = (double)actualXWidth / (double)targetXWidth;
+
+
+					printf("face zoom scale:%f\n", zoomScale);
+
+					int newHeight = int(trainRect->height * zoomScale);
+					int newWidth = int(trainRect->width * zoomScale);
+					int moveX = int((newWidth - trainRect->width)/2);
+					int moveY = int((newHeight - trainRect->height)/2);
+
+					//printf("\tnewHeight:%d\n\tnewWidth:%d\n\tnewX:%d\n", newHeight, newWidth, moveX);
+
+					leftEye.x = leftEye.x + moveX;
+					rightEye.x = rightEye.x + moveX;
+					leftEye.y = leftEye.y + moveY;
+					rightEye.y = rightEye.y + moveY;
+
+					trainRect->x = trainRect->x - moveX;
+					trainRect->y = trainRect->y - moveY;
+
+					trainRect->width = newWidth;
+					trainRect->height = newHeight;
+	//					printf ("FACEBLOCK\n\tx:%d\ty:%d\n\twidth:%d\n\theight:%d\n", trainRect->x, trainRect->y, trainRect->width, trainRect->height);
+	//					printf("EYES\n\tleft:%d,%d\n\tright:%d,%d\n\n", leftEye.x, leftEye.y, rightEye.x, rightEye.y);
+				}
+
+				// balance the eye position
+				int space = trainRect->width - (rightEye.x - leftEye.x);
+				int moveX = space/2 - leftEye.x;
+				trainRect->x = trainRect->x - moveX;
+				leftEye.x = leftEye.x + moveX;
+				rightEye.x = rightEye.x + moveX;
+
+				// move the box so the eyes are at the right height
+				int targetEyeY = int(canonicalLeftEye[1] * targetScale * zoomScale);
+				int moveY = targetEyeY - leftEye.y;
+				//printf("MOVING targetEyeY:%d, leftEyeY:%d, moveY:%d\n", targetEyeY, leftEye.y, moveY);
+				//cout << "\nMOVING Y TO:" << trainRect->y << " : " << moveY << "\n";
+				trainRect->y = trainRect->y - moveY;
+				leftEye.y = leftEye.y + moveY;
+				rightEye.y = rightEye.y + moveY;
+
+	//				printf ("FACEBLOCK\n\tx:%d\ty:%d\n\twidth:%d\n\theight:%d\n", trainRect->x, trainRect->y, trainRect->width, trainRect->height);
+	//				printf("EYES\n\tleft:%d,%d\n\tright:%d,%d\n\n", leftEye.x, leftEye.y, rightEye.x, rightEye.y);
+
+			}
+		}
+
 
 		if (opt_show_ui) {
 			cvNamedWindow("face", 1);
