@@ -310,6 +310,7 @@ void processImage(char * imageFile) {
 
 		// TODO: this block was pasted in from another project, it isn't currently working.
 
+		double targetScale = double(faceRect->height)/double(targetImageHeight);
 		if (opt_zoom) {
 			double zoomScale = 1;
 			// scale the train rectangle to the size it will need to be to align the eyes.
@@ -326,10 +327,10 @@ void processImage(char * imageFile) {
 
 					printf("face zoom scale:%f\n", zoomScale);
 
-					int newHeight = int(trainRect->height * zoomScale);
-					int newWidth = int(trainRect->width * zoomScale);
-					int moveX = int((newWidth - trainRect->width)/2);
-					int moveY = int((newHeight - trainRect->height)/2);
+					int newHeight = int(faceRect->height * zoomScale);
+					int newWidth = int(faceRect->width * zoomScale);
+					int moveX = int((newWidth - faceRect->width)/2);
+					int moveY = int((newHeight - faceRect->height)/2);
 
 					//printf("\tnewHeight:%d\n\tnewWidth:%d\n\tnewX:%d\n", newHeight, newWidth, moveX);
 
@@ -338,19 +339,19 @@ void processImage(char * imageFile) {
 					leftEye.y = leftEye.y + moveY;
 					rightEye.y = rightEye.y + moveY;
 
-					trainRect->x = trainRect->x - moveX;
-					trainRect->y = trainRect->y - moveY;
+					faceRect->x = faceRect->x - moveX;
+					faceRect->y = faceRect->y - moveY;
 
-					trainRect->width = newWidth;
-					trainRect->height = newHeight;
+					faceRect->width = newWidth;
+					faceRect->height = newHeight;
 	//					printf ("FACEBLOCK\n\tx:%d\ty:%d\n\twidth:%d\n\theight:%d\n", trainRect->x, trainRect->y, trainRect->width, trainRect->height);
 	//					printf("EYES\n\tleft:%d,%d\n\tright:%d,%d\n\n", leftEye.x, leftEye.y, rightEye.x, rightEye.y);
 				}
 
 				// balance the eye position
-				int space = trainRect->width - (rightEye.x - leftEye.x);
+				int space = faceRect->width - (rightEye.x - leftEye.x);
 				int moveX = space/2 - leftEye.x;
-				trainRect->x = trainRect->x - moveX;
+				faceRect->x = faceRect->x - moveX;
 				leftEye.x = leftEye.x + moveX;
 				rightEye.x = rightEye.x + moveX;
 
@@ -359,7 +360,7 @@ void processImage(char * imageFile) {
 				int moveY = targetEyeY - leftEye.y;
 				//printf("MOVING targetEyeY:%d, leftEyeY:%d, moveY:%d\n", targetEyeY, leftEye.y, moveY);
 				//cout << "\nMOVING Y TO:" << trainRect->y << " : " << moveY << "\n";
-				trainRect->y = trainRect->y - moveY;
+				faceRect->y = faceRect->y - moveY;
 				leftEye.y = leftEye.y + moveY;
 				rightEye.y = rightEye.y + moveY;
 
@@ -367,6 +368,8 @@ void processImage(char * imageFile) {
 	//				printf("EYES\n\tleft:%d,%d\n\tright:%d,%d\n\n", leftEye.x, leftEye.y, rightEye.x, rightEye.y);
 
 			}
+
+
 		}
 
 
