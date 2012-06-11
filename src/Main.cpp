@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
 void processImage(char * imageFile) {
 
 	if (opt_debug) {
-		printf("Loading Image:%s\n", imageFile);
+		printf("\n\nLoading Image:%s\n", imageFile);
 	}
 
 	IplImage* img = cvLoadImage(imageFile, 1);
@@ -215,6 +215,14 @@ void processImage(char * imageFile) {
 		faceRect->width = faceRect->width + expandX;
 		faceRect->height = faceRect->height + expandY;
 
+		if (opt_debug) {
+			printf("face found\n");
+			printf("\tx: %d\n", faceRect->x);
+			printf("\ty: %d\n", faceRect->y);
+			printf("\twidth: %d\n", faceRect->width);
+			printf("\theight: %d\n", faceRect->height);
+		}
+
 		IplImage *faceBlock = CvUtils::Sub_Image(
 				small_img,
 				cvRect(faceRect->x, /* x = start from leftmost */
@@ -229,18 +237,25 @@ void processImage(char * imageFile) {
 
 		CvPoint leftEye = cvPoint(0, 0);
 		CvPoint rightEye = cvPoint(0, 0);
+		CvPoint leftEyeAbsolute = cvPoint(0, 0);
+		CvPoint rightEyeAbsolute = cvPoint(0, 0);
 
 		// look for eyes in the photo
 		//cvClearMemStorage( storage );
 		eyeDetector->find(faceBlock, &leftEye, &rightEye);
-		leftEye.x = (faceRect->x + leftEye.x);
-		leftEye.y = (faceRect->y + leftEye.y);
-		rightEye.x = (faceRect->x + rightEye.x);
-		rightEye.y = (faceRect->y + rightEye.y);
+		leftEyeAbsolute.x = (faceRect->x + leftEye.x);
+		leftEyeAbsolute.y = (faceRect->y + leftEye.y);
+		rightEyeAbsolute.x = (faceRect->x + rightEye.x);
+		rightEyeAbsolute.y = (faceRect->y + rightEye.y);
+
+		if (opt_debug) {
+			printf("\tleft eye x: %d, y: %d\n", leftEye.x, leftEye.y);
+			printf("\tleft eye x: %d, y: %d\n", rightEye.x, rightEye.y);
+		}
 
 		// draw crosshairs where we think the eyes are
-		CvUtils::drawCrosshair(&leftEye, imgMarkup, 255, 0, 0);
-		CvUtils::drawCrosshair(&rightEye, imgMarkup, 0, 0, 255);
+		CvUtils::drawCrosshair(&leftEyeAbsolute, imgMarkup, 255, 0, 0);
+		CvUtils::drawCrosshair(&rightEyeAbsolute, imgMarkup, 0, 0, 255);
 
 
 		// write the face as it was found in the image
@@ -318,6 +333,7 @@ void processImage(char * imageFile) {
 			double zoomScale = 1;
 			// scale the train rectangle to the size it will need to be to align the eyes.
 			if (leftEye.x > 0 && rightEye.x > 0) {
+
 				// see if we need to resize the height/width of the face block
 				int targetLeftEyeX = int(canonicalLeftEye[0] * targetScale);
 				int targetRightEyeX = int(canonicalRightEye[0] * targetScale);
@@ -381,6 +397,25 @@ void processImage(char * imageFile) {
 			//cvReleaseImage(faceimg);
 			//faceimg = cvCloneImage(img);
 			cvResize(imgOperation, faceTrain, CV_INTER_LINEAR);
+
+			if (opt_show_ui) {
+				cvNamedWindow("scaled", 1);
+				cvShowImage("scaled", faceTrain);
+				cvResizeWindow("scaled", faceTrain->width, faceTrain->height);
+			}
+
+			// write the rotated image
+			if (opt_output_path) {
+				char *destImageUri = new char[strlen(opt_output_path) + strlen("scaled_") + strlen(imageFileName) + 1];
+				sprintf(destImageUri, "%scaled_%s", opt_output_path, imageFileName);
+				if (opt_debug) {
+					printf("Saving scaled image to %s\n", destImageUri);
+				}
+				cvSaveImage(destImageUri, faceTrain);
+				delete[] destImageUri;
+			}
+
+			cvReleaseImage(&faceTrain);
 
 			CvPoint leftEyeTrained = cvPoint(
 					int(leftEye.x / targetScale / zoomScale),
@@ -512,7 +547,8 @@ int loadOptions(int argc, char *argv[]) {
 	opt->addUsage(" -D  --draw-features  Draw the facial feature regions");
 	opt->addUsage(" -u  --show-ui        Show UI");
 	opt->addUsage(" -d  --debug          Debug");
-	opt->addUsage(" -R  --rotate         Rotate and scale face based on eye detection");
+	opt->addUsage(" -R  --rotate         Rotate face based on eye detection");
+	opt->addUsage(" -z  --zoom           Zoom face based on eye detection");
 
 	opt->addUsage("");
 	opt->addUsage("Options: ");
@@ -529,6 +565,7 @@ int loadOptions(int argc, char *argv[]) {
 	opt->setFlag("show-ui", 'u');
 	opt->setFlag("debug", 'd');
 	opt->setFlag("rotate", 'R');
+	opt->setFlag("zoom", 'z');
 
 	opt->setOption("cascade", 'c');
 	opt->setOption("left-eye-cascade", 'l');
@@ -568,6 +605,10 @@ int loadOptions(int argc, char *argv[]) {
 
 	if (opt->getFlag('R') || opt->getFlag("rotate")) {
 		opt_rotate = true;
+	}
+
+	if (opt->getFlag('z') || opt->getFlag("zoom")) {
+		opt_zoom = true;
 	}
 
 	if (opt->getValue('c') != NULL || opt->getValue("cascade") != NULL) {
