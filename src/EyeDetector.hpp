@@ -15,13 +15,13 @@ class EyeDetector {
 		EyeDetector();
 		EyeDetector(char *leftClassifier, char *rightClassifier);
 		void setDebug(bool opt_debug);
+		void setShowUi(bool value);
 		void setLeftEyeCascade(char *classifier);
 		void setRightEyeCascade(char *classifier);
 		void find(IplImage *image, CvPoint *leftEye, CvPoint *rightEye);
 
 		static const int FIND_AVERAGE = 1;
 		static const int FIND_LARGEST = 2;
-		bool opt_show_ui;
 		~EyeDetector();
 
 	private:
@@ -33,6 +33,7 @@ class EyeDetector {
 		CvHaarClassifierCascade* eyeCascadeLeft;
 		CvHaarClassifierCascade* eyeCascadeRight;
 		bool opt_debug;
+		bool opt_show_ui;
 		int width_min;
 		int width_max;
 

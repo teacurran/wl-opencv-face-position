@@ -49,15 +49,19 @@ void EyeDetector::find(IplImage *image, CvPoint *leftEye, CvPoint *rightEye) {
 		cvConvert(image, imgCopy);
 	}
 
+	double percentageFromTop = 6;
+	double percentageFromBottom = 45;
+
 	cvSetImageROI(imgCopy, /* the source image */
-	cvRect(0, /* x = start from leftmost */
-	(image->height / 5), /* y = a few pixels from the top */
-	image->width, /* width = same width with the face */
-	image->height / 2.0 - image->height / 5 /* height = 1/3 of face height */
-	));
+			cvRect(0, /* x = start from leftmost */
+				(image->height * percentageFromTop / 100), /* y = a few pixels from the top */
+				image->width, /* width = same width with the face */
+				image->height - (image->height * percentageFromBottom / 100) /* height = 1/3 of face height */
+			)
+		);
 
 	IplImage *eyeBlock = cvCreateImage(
-			cvSize(imgCopy->width, imgCopy->height / 2 - imgCopy->height / 5),
+			cvSize(imgCopy->width, image->height - (image->height * percentageFromBottom / 100)),
 			8, 1);
 
 	cvCopy(imgCopy, eyeBlock);
@@ -208,10 +212,10 @@ void EyeDetector::find(IplImage *image, CvPoint *leftEye, CvPoint *rightEye) {
 		rightEye->x = rightEye->x / eyeScale;
 	}
 	if (leftEye->y > 0) {
-		leftEye->y = (image->height / 5) + (leftEye->y / eyeScale);
+		leftEye->y = (image->height * percentageFromTop / 100) + (leftEye->y / eyeScale);
 	}
 	if (rightEye->y > 0) {
-		rightEye->y = (image->height / 5) + (rightEye->y / eyeScale);
+		rightEye->y = (image->height * percentageFromTop / 100) + (rightEye->y / eyeScale);
 	}
 
 	if (opt_debug) {
@@ -239,12 +243,17 @@ void EyeDetector::init() {
 	findMethod = FIND_LARGEST;
 	opt_show_ui = false;
 	opt_debug = false;
+	opt_show_ui = false;
 	width_min = 150;
 	width_max = 300;
 }
 
 void EyeDetector::setDebug(bool debug) {
 	opt_debug = debug;
+}
+
+void EyeDetector::setShowUi(bool value) {
+	opt_show_ui = value;
 }
 
 void EyeDetector::setLeftEyeCascade(char * classifier) {

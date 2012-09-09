@@ -71,6 +71,8 @@ int main(int argc, char** argv) {
 
 	// load the eye detector cascades
 	eyeDetector = new EyeDetector();
+	eyeDetector->setDebug(opt_debug);
+	eyeDetector->setShowUi(opt_show_ui);
 
 	if (opt_cascade_eye_left) {
 		eyeDetector->setLeftEyeCascade(opt_cascade_eye_left);
