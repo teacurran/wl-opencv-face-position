@@ -523,8 +523,11 @@ void printVersion() {
 	const char *opencvLibraries = 0;
 	const char *addonModules = 0;
 	cvGetModuleInfo(0, &opencvLibraries, &addonModules);
-	cout << "*******************************\n" << "* blinkdetector\n";
-	printf("* OpenCV: %s \n* Add-on Modules:%s \n", opencvLibraries, addonModules);
+	cout << "*******************************\n";
+	cout << "* Wirelust opencv face position\n";
+	cout << "* OpenCV: " << opencvLibraries << "\n";
+	cout << "* Add-on Modules: " << addonModules << "\n";
+	cout << "* http://www.wirelust.com\n";
 	cout << "*******************************\n";
 }
 

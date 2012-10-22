@@ -149,25 +149,6 @@ void EyeDetector::find(IplImage *image, CvPoint *leftEye, CvPoint *rightEye) {
 			} else {
 				rightEyes.push_back(eye);
 			}
-
-			//printf("eye x:%d y:%d\n", eyePoint.x, eyePoint.y);
-
-			/*
-			 cvRectangle(
-			 eyeBlock,
-			 cvPoint(
-			 eye->x,
-			 eye->y
-			 ),
-			 cvPoint(
-			 eye->x + eye->width,
-			 eye->y + eye->height
-			 ),
-			 CV_RGB(0, 0, 255),
-			 1, 8, 0
-			 );
-			 */
-
 		}
 	} else {
 		fprintf(stderr, "Error: right eye cascade not loaded\n");
@@ -224,8 +205,43 @@ void EyeDetector::find(IplImage *image, CvPoint *leftEye, CvPoint *rightEye) {
 	}
 
 	if (opt_show_ui) {
-		//CvUtils::drawCrosshair(leftEye, eyeBlock, 255, 0, 0);
-		//CvUtils::drawCrosshair(rightEye, eyeBlock, 0, 0, 255);
+
+		for (int i = 0; i < leftEyes.size(); i++) {
+			CvRect *eye = leftEyes[i];
+			cvRectangle(
+				eyeBlock,
+				cvPoint(
+					eye->x,
+					eye->y
+				),
+				cvPoint(
+					eye->x + eye->width,
+					eye->y + eye->height
+				),
+				CV_RGB(255, 0, 0),
+				1, 8, 0
+			);
+		}
+		CvUtils::drawCrosshair(leftEye, eyeBlock, 255, 0, 0);
+
+		for (int i = 0; i < rightEyes.size(); i++) {
+			CvRect *eye = rightEyes[i];
+			cvRectangle(
+				eyeBlock,
+				cvPoint(
+					eye->x,
+					eye->y
+				),
+				cvPoint(
+					eye->x + eye->width,
+					eye->y + eye->height
+				),
+				CV_RGB(0, 0, 255),
+				1, 8, 0
+			);
+		}
+
+		CvUtils::drawCrosshair(rightEye, eyeBlock, 0, 0, 255);
 
 		cvNamedWindow("eyes", 1);
 		cvShowImage("eyes", eyeBlock);
