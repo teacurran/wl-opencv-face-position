@@ -302,8 +302,10 @@ void processImage(char * imageFile) {
 
 				if (opt_show_ui) {
 					cvNamedWindow("rotated", 1);
+					cvMoveWindow("rotated", 800, 50);
 					cvShowImage("rotated", imgOperation);
 					cvResizeWindow("rotated", imgOperation->width, imgOperation->height);
+
 				}
 
 				operationRect->x = imgOperation->width / 2 - faceRect->width / 2;	/* x = start from leftmost */
@@ -402,6 +404,7 @@ void processImage(char * imageFile) {
 
 			if (opt_show_ui) {
 				cvNamedWindow("scaled", 1);
+				cvMoveWindow("scaled", 50, 600);
 				cvShowImage("scaled", faceTrain);
 				cvResizeWindow("scaled", faceTrain->width, faceTrain->height);
 			}
@@ -441,8 +444,10 @@ void processImage(char * imageFile) {
 
 		if (opt_show_ui) {
 			cvNamedWindow("face", 1);
+			cvMoveWindow("face", 750, 600);
 			cvShowImage("face", faceBlock);
 			//cvResizeWindow("face", faceRect->width, faceRect->height);
+
 		}
 
 		// write the marked up image
@@ -459,6 +464,7 @@ void processImage(char * imageFile) {
 		// display the marked up image
 		if (opt_show_ui) {
 			cvNamedWindow("markup", 1);
+			cvMoveWindow("markup", 50, 50);
 			cvShowImage("markup", imgMarkup);
 			cvResizeWindow("markup", imgMarkup->width, imgMarkup->height);
 

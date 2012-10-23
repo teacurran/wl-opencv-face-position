@@ -246,6 +246,7 @@ void EyeDetector::find(IplImage *image, CvPoint *leftEye, CvPoint *rightEye) {
 		cvNamedWindow("eyes", 1);
 		cvShowImage("eyes", eyeBlock);
 		cvResizeWindow("eyes", eyeBlock->width, eyeBlock->height);
+		cvMoveWindow("eyes", 400, 600);
 	}
 
 	cvReleaseImage(&eyeBlock);
