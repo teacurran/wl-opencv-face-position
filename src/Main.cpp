@@ -16,8 +16,8 @@ using namespace std;
 const double canonicalLeftEye[]  = { 17, 21 };
 const double canonicalRightEye[] = { 65, 21 };
 
-const int targetImageWidth = 100;
-const int targetImageHeight = 100;
+const int targetImageWidth = 200;
+const int targetImageHeight = 200;
 
 char* opt_file = 0;
 char* opt_cascade_face = 0;
@@ -49,7 +49,7 @@ void printUsage();
 int main(int argc, char** argv) {
 
 	// load the command line options
-	if (!loadOptions(argc, argv)) {
+ 	if (!loadOptions(argc, argv)) {
 		return 0;
 	}
 
@@ -199,7 +199,7 @@ void processImage(char * imageFile) {
 	for (i = 0; i < (faces ? faces->total : 0); i++) {
 
 		CvRect* faceRect = (CvRect*) cvGetSeqElem(faces, i);
-		CvRect* operationRect = (CvRect*) cvGetSeqElem(faces, i);
+		CvRect operationRect = cvRect(faceRect->x, faceRect->y, faceRect->width, faceRect->height);
 		CvPoint center;
 
 		//int radius;
@@ -292,13 +292,8 @@ void processImage(char * imageFile) {
 				CvPoint centerRotatePoint = cvPoint(faceRect->x + (faceRect->width / 2),
 						faceRect->y + (faceRect->height / 2));
 				CvUtils::drawCrosshair(&centerRotatePoint, imgMarkup, 255, 0, 0);
-				//CvPoint centerRotatePoint = cvPoint((leftEyeAvg.x + rightEyeAvg.x) / 2, (leftEyeAvg.y + rightEyeAvg.y) /2);
-				//CvPoint centerRotatePoint = cvPoint(leftEyeAvg.x, leftEyeAvg.y);
+
 				CvUtils::rotateWithQuadrangle(small_img, imgOperation, angle, &centerRotatePoint);
-				//cvCopy( rotatedImage, small_img);
-				//cvCopy( rotatedImage, imgMarkup);
-				//cvCvtColor( small_img, small_img_gray, CV_BGR2GRAY );
-				//cvReleaseImage( &rotatedImage );
 
 				if (opt_show_ui) {
 					cvNamedWindow("rotated", 1);
@@ -308,13 +303,13 @@ void processImage(char * imageFile) {
 
 				}
 
-				operationRect->x = imgOperation->width / 2 - faceRect->width / 2;	/* x = start from leftmost */
-				operationRect->y = imgOperation->height / 2 - faceRect->height / 2; /* y = a few pixels from the top */
-				operationRect->width = faceRect->width;	/* width = same width with the face */
-				operationRect->height = faceRect->height; /* height = 1/3 of face height */
+				operationRect.x = imgOperation->width / 2 - faceRect->width / 2;	/* x = start from leftmost */
+				operationRect.y = imgOperation->height / 2 - faceRect->height / 2; /* y = a few pixels from the top */
+				operationRect.width = faceRect->width;	/* width = same width with the face */
+				operationRect.height = faceRect->height; /* height = 1/3 of face height */
 
 				cvReleaseImage(&faceBlock);
-				faceBlock = CvUtils::Sub_Image(imgOperation, *operationRect);
+ 				faceBlock = CvUtils::Sub_Image(imgOperation, operationRect);
 
 				// write the rotated image
 				if (opt_output_path) {
@@ -330,7 +325,12 @@ void processImage(char * imageFile) {
 			}
 		}
 
-		// TODO: this block was pasted in from another project, it isn't currently working.
+		if (opt_show_ui) {
+			cvNamedWindow("face", 1);
+			cvMoveWindow("face", 750, 600);
+			cvShowImage("face", faceBlock);
+			//cvResizeWindow("face", faceRect->width, faceRect->height);
+		}
 
 		double targetScale = double(faceRect->height)/double(targetImageHeight);
 		if (opt_zoom) {
@@ -346,7 +346,6 @@ void processImage(char * imageFile) {
 
 				if (actualXWidth > 0) {
 					zoomScale = (double)actualXWidth / (double)targetXWidth;
-
 
 					printf("face zoom scale:%f\n", zoomScale);
 
@@ -367,8 +366,8 @@ void processImage(char * imageFile) {
 
 					faceRect->width = newWidth;
 					faceRect->height = newHeight;
-	//					printf ("FACEBLOCK\n\tx:%d\ty:%d\n\twidth:%d\n\theight:%d\n", trainRect->x, trainRect->y, trainRect->width, trainRect->height);
-	//					printf("EYES\n\tleft:%d,%d\n\tright:%d,%d\n\n", leftEye.x, leftEye.y, rightEye.x, rightEye.y);
+					//	printf ("FACEBLOCK\n\tx:%d\ty:%d\n\twidth:%d\n\theight:%d\n", trainRect->x, trainRect->y, trainRect->width, trainRect->height);
+					//	printf("EYES\n\tleft:%d,%d\n\tright:%d,%d\n\n", leftEye.x, leftEye.y, rightEye.x, rightEye.y);
 				}
 
 				// balance the eye position
@@ -381,23 +380,23 @@ void processImage(char * imageFile) {
 				// move the box so the eyes are at the right height
 				int targetEyeY = int(canonicalLeftEye[1] * targetScale * zoomScale);
 				int moveY = targetEyeY - leftEye.y;
+
 				//printf("MOVING targetEyeY:%d, leftEyeY:%d, moveY:%d\n", targetEyeY, leftEye.y, moveY);
 				//cout << "\nMOVING Y TO:" << trainRect->y << " : " << moveY << "\n";
 				faceRect->y = faceRect->y - moveY;
 				leftEye.y = leftEye.y + moveY;
 				rightEye.y = rightEye.y + moveY;
 
-	//				printf ("FACEBLOCK\n\tx:%d\ty:%d\n\twidth:%d\n\theight:%d\n", trainRect->x, trainRect->y, trainRect->width, trainRect->height);
-	//				printf("EYES\n\tleft:%d,%d\n\tright:%d,%d\n\n", leftEye.x, leftEye.y, rightEye.x, rightEye.y);
+				//	printf ("FACEBLOCK\n\tx:%d\ty:%d\n\twidth:%d\n\theight:%d\n", trainRect->x, trainRect->y, trainRect->width, trainRect->height);
+				//	printf("EYES\n\tleft:%d,%d\n\tright:%d,%d\n\n", leftEye.x, leftEye.y, rightEye.x, rightEye.y);
 
 			}
 
 			IplImage *faceTrain = cvCreateImage(cvSize(targetImageWidth, targetImageHeight), imgOperation->depth, imgOperation->nChannels);
 
 			cvResetImageROI(imgOperation);
-			cvSetImageROI(imgOperation, *operationRect);
+			cvSetImageROI(imgOperation, operationRect);
 
-			//sprintf(file_num,îG:\\faces_from_movie\\%d.jpgî,int(framenum));
 			//cvReleaseImage(faceimg);
 			//faceimg = cvCloneImage(img);
 			cvResize(imgOperation, faceTrain, CV_INTER_LINEAR);
@@ -409,7 +408,7 @@ void processImage(char * imageFile) {
 				cvResizeWindow("scaled", faceTrain->width, faceTrain->height);
 			}
 
-			// write the rotated image
+			// write the scaled image
 			if (opt_output_path) {
 				char *destImageUri = new char[strlen(opt_output_path) + strlen("scaled_") + strlen(imageFileName) + 1];
 				sprintf(destImageUri, "%scaled_%s", opt_output_path, imageFileName);
@@ -422,33 +421,8 @@ void processImage(char * imageFile) {
 
 			cvReleaseImage(&faceTrain);
 
-			CvPoint leftEyeTrained = cvPoint(
-					int(leftEye.x / targetScale / zoomScale),
-					int(leftEye.y  / targetScale / zoomScale)
-			);
-			CvPoint rightEyeTrained = cvPoint(
-					int(rightEye.x  / targetScale / zoomScale),
-					int(rightEye.y  / targetScale / zoomScale)
-			);
-
-
-//			CvUtils::drawCrosshair(&leftEyeActual, faceTrain, 255, 0, 0);
-//			CvUtils::drawCrosshair(&rightEyeActual, faceTrain, 0, 0, 255);
-//			cvNamedWindow("TRAIN");
-//			cvShowImage("TRAIN", faceTrain);
-//			cvResizeWindow("TRAIN", faceTrain->width, faceTrain->height);
-
-
 		}
 
-
-		if (opt_show_ui) {
-			cvNamedWindow("face", 1);
-			cvMoveWindow("face", 750, 600);
-			cvShowImage("face", faceBlock);
-			//cvResizeWindow("face", faceRect->width, faceRect->height);
-
-		}
 
 		// write the marked up image
 		if (opt_output_path) {
