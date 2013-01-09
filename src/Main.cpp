@@ -49,7 +49,7 @@ void printUsage();
 int main(int argc, char** argv) {
 
 	// load the command line options
- 	if (!loadOptions(argc, argv)) {
+  	if (!loadOptions(argc, argv)) {
 		return 0;
 	}
 
@@ -405,7 +405,7 @@ void processImage(char * imageFile) {
 				cvNamedWindow("scaled", 1);
 				cvMoveWindow("scaled", 50, 600);
 				cvShowImage("scaled", faceTrain);
-				cvResizeWindow("scaled", faceTrain->width, faceTrain->height);
+				//cvResizeWindow("scaled", faceTrain->width, faceTrain->height);
 			}
 
 			// write the scaled image
