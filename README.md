@@ -20,6 +20,6 @@ Compiling looks something like this:
 To compile this app:
 * mkdir build
 * cd build
-* cnake ..
+* cmake ..
 * make
 
