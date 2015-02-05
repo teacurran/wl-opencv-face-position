@@ -3,6 +3,9 @@ wirelust-opencv-face-position
 
 Example of OpenCv face rotation, zoom, and positioning for detection
 
+This example was used in the blog post:  
+http://www.wirelust.com/2013/01/08/normalizing-faces-with-opencv/
+
 Building
 -----------------------------
 
