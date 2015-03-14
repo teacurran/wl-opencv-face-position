@@ -12,7 +12,7 @@ Building
 This app requires OpenCV. I am currently using a self compiled version.
 
 Compiling looks something like this:
-* git pull git://code.opencv.org/opencv.git
+* git clone git://code.opencv.org/opencv.git
 * cd opencv
 * mkdir build
 * cd build
