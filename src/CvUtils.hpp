@@ -129,7 +129,7 @@ public:
 	}
 
 	static CvPoint getAverageCenterPoint(vector <CvRect*>& rects) {
-		vector<CvPoint*> points;
+		vector <CvPoint*> points;
 		for (int i=0; i<rects.size(); i++) {
 			CvRect *thisRect = rects.at(i);
 			CvPoint thisPoint = getRectCenterPoint(thisRect);
@@ -147,8 +147,8 @@ public:
 			totalY = totalY + thisPoint->y;
 		}
 		CvPoint point = cvPoint (
-			cvRound(totalX / points.size()),
-			cvRound(totalY / points.size())
+			cvRound(totalX / (double)points.size()),
+			cvRound(totalY / (double)points.size())
 		);
 		return point;
 	}
@@ -196,14 +196,14 @@ public:
 
 	static CvScalar * getColors(void) {
 		static CvScalar colors[] = {
-			{{0,0,255}},
-			{{0,128,255}},
-			{{0,255,255}},
-			{{0,255,0}},
-			{{255,128,0}},
-			{{255,255,0}},
-			{{255,0,0}},
-			{{255,0,255}}
+			{0,0,255,0},
+			{0,128,255,0},
+			{0,255,255,0},
+			{0,255,0,0},
+			{255,128,0,0},
+			{255,255,0,0},
+			{255,0,0,0},
+			{255,0,255,0}
 		};
 		return colors;
 	}

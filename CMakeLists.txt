@@ -4,7 +4,7 @@ project(wlst-ofp)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 SET(CMAKE_BUILD_TYPE testing)
-SET(CMAKE_CXX_FLAGS_TESTING "-g -O0")
+set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++")
 SET(CMAKE_C_FLAGS_TESTING "-g -O0")
 
 SET(CMAKE_VERBOSE_MAKEFILE ON)
@@ -14,7 +14,14 @@ SET(CMAKE_VERBOSE_MAKEFILE ON)
 #include_directories(${CV_INCLUDE_DIRS})
 #set(LIBS ${LIBS} ${CV_LIBRARIES})
 
-find_library(CV opencv_core)
+find_library(CV_LIB_DIR
+    NAMES opencv_core
+    PATHS
+    /usr/local/lib/
+    /usr/lib/
+    )
+message(STATUS "Lib file detected: [${CV_LIB_DIR}].")
+
 find_library(CV_HIGHGUI opencv_highgui)
 find_library(CV_IMGPROC opencv_imgproc)
 find_library(CV_OBJDETECT opencv_objdetect)
@@ -23,6 +30,7 @@ include_directories(src)
 #include_directories("${CMAKE_SOURCE_DIR}/opencv/include/opencv/")
 #include_directories("${CMAKE_SOURCE_DIR}/opencv/src/cv")
 include_directories("/usr/local/include/opencv/")
+include_directories("/usr/local/include")
 
 file(GLOB lib_srcs "src/*.cpp")
 file(GLOB lib_hdrs "src/*.hpp")
