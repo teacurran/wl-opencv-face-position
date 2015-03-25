@@ -6,6 +6,8 @@ Example of OpenCv face rotation, zoom, and positioning for detection
 This example was used in the blog post:  
 http://www.wirelust.com/2013/01/08/normalizing-faces-with-opencv/
 
+*this build info may be out of date because of changes made to OpenCV. I am working on updates in another branch.*
+
 Building
 -----------------------------
 
