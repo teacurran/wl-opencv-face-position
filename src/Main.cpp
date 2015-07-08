@@ -502,11 +502,10 @@ void printVersion() {
 	// Display if the IPP library got loaded into opencv.
 	const char *opencvLibraries = 0;
 	const char *addonModules = 0;
-	cvGetModuleInfo(0, &opencvLibraries, &addonModules);
+
 	cout << "*******************************\n";
 	cout << "* Wirelust opencv face position\n";
-	cout << "* OpenCV: " << opencvLibraries << "\n";
-	cout << "* Add-on Modules: " << addonModules << "\n";
+	cout << "* OpenCV: " << cv::getBuildInformation() << "\n";
 	cout << "* http://www.wirelust.com\n";
 	cout << "*******************************\n";
 }
